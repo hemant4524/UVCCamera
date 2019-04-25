@@ -81,17 +81,14 @@ android {
 }
 
 dependencies {
-	api fileTree(dir: 'libs', include: ['*.jar'])
-
+	api fileTree(include: ['*.jar'], dir: 'libs')
 	implementation "com.android.support:support-v4:${supportLibVersion}"
 	implementation "com.android.support:support-annotations:${supportLibVersion}"
-
 	implementation("com.serenegiant:common:${commonLibVersion}") {
 		exclude module: 'support-v4'
 	}
 	implementation project(':libuvccamera')
 	implementation project(':usbCameraCommon')
-
 	//retrofit for web service
 	implementation 'com.squareup.retrofit2:retrofit:2.4.0'
 	implementation 'com.squareup.retrofit2:converter-gson:2.4.0'

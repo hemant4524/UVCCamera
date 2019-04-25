@@ -84,6 +84,8 @@ android {
 //clean.dependsOn 'ndkClean'
 
 dependencies {
+    implementation files('lib/logback-android-1.1.1-2.jar')
+    implementation files('lib/slf4j-api-1.7.6.jar')
     implementation fileTree(dir: new File(buildDir, 'libs'), include: '*.jar')
 
     implementation "com.android.support:support-v4:${supportLibVersion}"

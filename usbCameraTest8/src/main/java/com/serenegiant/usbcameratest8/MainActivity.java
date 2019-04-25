@@ -147,9 +147,9 @@ public final class MainActivity extends BaseActivity implements CameraDialog.Cam
 				USE_SURFACE_ENCODER ? 0 : 1, PREVIEW_WIDTH, PREVIEW_HEIGHT, PREVIEW_MODE);
 
 
-		final List<DeviceFilter> filter = DeviceFilter.getDeviceFilters(MainActivity.this, com.serenegiant.uvccamera.R.xml.device_filter);
-		List<UsbDevice> deviceList = mUSBMonitor.getDeviceList(filter.get(0));
-		mUSBMonitor.requestPermission((UsbDevice)deviceList.get(0));
+//		final List<DeviceFilter> filter = DeviceFilter.getDeviceFilters(MainActivity.this, com.serenegiant.uvccamera.R.xml.device_filter);
+//		List<UsbDevice> deviceList = mUSBMonitor.getDeviceList(filter.get(0));
+//		mUSBMonitor.requestPermission((UsbDevice)deviceList.get(0));
 
 
 

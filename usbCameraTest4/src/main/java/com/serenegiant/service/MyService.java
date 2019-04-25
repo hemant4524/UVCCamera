@@ -72,16 +72,16 @@ public class MyService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        cameraClientList =  new ArrayList<>();
+        cameraClientList = new ArrayList<>();
 
         final File dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM), DIR_NAME);
         try {
             String path = dir.getAbsolutePath();
             File folder = new File(path);
-            if (folder.exists()) {
+            if (folder != null && folder.exists() && folder.listFiles() != null) {
 
                 for (File file : folder.listFiles()) {
-                    Log.d("File", "Delete file: "+file.getAbsolutePath());
+                    Log.d("File", "Delete file: " + file.getAbsolutePath());
                     file.delete();
                 }
             }
@@ -89,7 +89,7 @@ public class MyService extends Service {
             e.printStackTrace();
         }
 
-        mNotificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+        mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         showNotification(getString(R.string.app_name));
 
 
@@ -108,8 +108,7 @@ public class MyService extends Service {
         if (intent.getAction().equals(Constants.ACTION.STARTFOREGROUND_ACTION)) {
             Log.i(TAG, "Received Start Foreground Intent ");
             // your start service code
-        }
-        else if (intent.getAction().equals( Constants.ACTION.STOPFOREGROUND_ACTION)) {
+        } else if (intent.getAction().equals(Constants.ACTION.STOPFOREGROUND_ACTION)) {
             Log.i(TAG, "Received Stop Foreground Intent");
             //your end servce code
             stopForeground(true);
@@ -159,81 +158,120 @@ public class MyService extends Service {
                     cameraClient.connect();
 
                 }
-            }, 15000);
+            }, 1000);
 
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
 
-            if (cameraIds.size() > 1) {
-
-
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-
-
-                        cameraClient = new CameraClient(getApplicationContext(), mCameraListener);
-                        cameraClient.select(list.get(cameraIds.get(1)));
-                        cameraClient.resize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
-                        cameraClient.connect();
-
-                    }
-                }, 30000);
-
-            }
+                    cameraClient.disconnect();
+                    cameraClient.release();
+                    final Intent stopIntent = new Intent(getApplicationContext(), UVCService.class);
+                    stopIntent.setAction(Constants.ACTION.STOPFOREGROUND_ACTION);
+                    getApplicationContext().startService(stopIntent);
+                }
+            }, 10000);
 
 
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    File root = Environment.getExternalStorageDirectory();
 
-                    final File dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM), DIR_NAME);
-
-//                    String dirPath = root.getPath() + File.separator + FileConstant.APP_ROOT_FOLDER_NAME;
-                    String dirPath = dir.getAbsolutePath();
-
-                    File folder = new File(dirPath);
-
-                    // Send file to server
-                    MultipartBody.Builder builder = new MultipartBody.Builder();
-                    builder.setType(MultipartBody.FORM);
-
-                    MultipartBody.Part[] parts = new MultipartBody.Part[folder.listFiles().length];
-
-                    int i = 0;
-
-                    if (folder.exists()) {
-
-                        for (File file : folder.listFiles()) {
-                            Log.d("File", "Upload file: " + file.getAbsolutePath());
-                            RequestBody surveyBody = RequestBody.create(MediaType.parse("image/*"), file);
-                            parts[i] = MultipartBody.Part.createFormData("files[]", file.getName(), surveyBody);
-                            i++;
-                        }
-                    }
-
-
-//            Call<JsonObject> call = RestClient.getInstance().getApiService().uploadMultiFile1(parts);
-//            call.enqueue(new Callback<JsonObject>() {
-//                @Override
-//                public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
-//
-//                    Log.d("Success response:", ": "+response);
-//
-//                    Toast.makeText(getApplicationContext(), "Image upload successfully! ", Toast.LENGTH_LONG).show();
-//
-//
-//                }
-//
-//                @Override
-//                public void onFailure(Call<JsonObject> call, Throwable t) {
-//
-//                    Log.d("Error in  webservice:", " " + t.getMessage());
-//                    Toast.makeText(getApplicationContext(), "Error in  webservice:"+t.getMessage(), Toast.LENGTH_SHORT).show();
-//                }
-//            });
+                    cameraClient = new CameraClient(getApplicationContext(), mCameraListener);
+                    cameraClient.select(list.get(cameraIds.get(1)));
+                    cameraClient.resize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+                    cameraClient.connect();
 
                 }
-            }, 50000);
+            }, 11000);
+
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+
+                    cameraClient.disconnect();
+                    cameraClient.release();
+                    final Intent stopIntent = new Intent(getApplicationContext(), UVCService.class);
+                    stopIntent.setAction(Constants.ACTION.STOPFOREGROUND_ACTION);
+                    getApplicationContext().startService(stopIntent);
+                    stopSelf();
+                }
+            }, 21000);
+
+
+//            if (cameraIds.size() > 1) {
+//
+//
+//                new Handler().postDelayed(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        cameraClient.disconnect();
+//                        cameraClient.release();
+//
+//                        cameraClient = new CameraClient(getApplicationContext(), mCameraListener);
+//                        cameraClient.select(list.get(cameraIds.get(1)));
+//                        cameraClient.resize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+//                        cameraClient.connect();
+//
+//                    }
+//                }, 30000);
+//
+//            }
+
+
+//            new Handler().postDelayed(new Runnable() {
+//                @Override
+//                public void run() {
+//                    File root = Environment.getExternalStorageDirectory();
+//
+//                    final File dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM), DIR_NAME);
+//
+////                    String dirPath = root.getPath() + File.separator + FileConstant.APP_ROOT_FOLDER_NAME;
+//                    String dirPath = dir.getAbsolutePath();
+//
+//                    File folder = new File(dirPath);
+//
+//                    // Send file to server
+//                    MultipartBody.Builder builder = new MultipartBody.Builder();
+//                    builder.setType(MultipartBody.FORM);
+//
+//                    MultipartBody.Part[] parts = new MultipartBody.Part[folder.listFiles().length];
+//
+//                    int i = 0;
+//
+//                    if (folder.exists()) {
+//
+//                        for (File file : folder.listFiles()) {
+//                            Log.d("File", "Upload file: " + file.getAbsolutePath());
+//                            RequestBody surveyBody = RequestBody.create(MediaType.parse("image/*"), file);
+//                            parts[i] = MultipartBody.Part.createFormData("files[]", file.getName(), surveyBody);
+//                            i++;
+//                        }
+//                    }
+//
+//
+//                    Call<JsonObject> call = RestClient.getInstance().getApiService().uploadMultiFile1(parts);
+//                    call.enqueue(new Callback<JsonObject>() {
+//                        @Override
+//                        public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+//
+//                            Log.d("Success response:", ": " + response);
+//
+//                            Toast.makeText(getApplicationContext(), "Image upload successfully! ", Toast.LENGTH_LONG).show();
+//
+//
+//                        }
+//
+//                        @Override
+//                        public void onFailure(Call<JsonObject> call, Throwable t) {
+//
+//                            Log.d("Error in  webservice:", " " + t.getMessage());
+//                            Toast.makeText(getApplicationContext(), "Error in  webservice:" + t.getMessage(), Toast.LENGTH_SHORT).show();
+//                        }
+//                    });
+//
+//                }
+//            }, 25000);
 
 
 //            new Handler().postDelayed(new Runnable() {
@@ -256,11 +294,11 @@ public class MyService extends Service {
     public void onDestroy() {
         super.onDestroy();
 
-            if (cameraClient != null) {
-                cameraClient.release();
-                cameraClient.disconnect();
+        if (cameraClient != null) {
+            cameraClient.release();
+            cameraClient.disconnect();
 
-            }
+        }
         if (DEBUG) Log.v(TAG, "onDestroy:");
 
         final Intent stopIntent = new Intent(getApplicationContext(), UVCService.class);
@@ -273,14 +311,14 @@ public class MyService extends Service {
         public void onConnect() {
             if (DEBUG) Log.v(TAG, "onConnect:");
 
-            if(!isMyServiceRunning(UVCService.class)){
+            if (!isMyServiceRunning(UVCService.class)) {
 
                 // start UVCService
                 final Intent intent = new Intent(getApplicationContext(), UVCService.class);
                 intent.setAction(Constants.ACTION.STARTFOREGROUND_ACTION);
                 getApplication().startService(intent);
 
-            }else{
+            } else {
 
                 final Intent intent = new Intent(getApplicationContext(), UVCService.class);
                 getApplication().stopService(intent);
@@ -325,14 +363,13 @@ public class MyService extends Service {
     };
 
 
-
     private Runnable runnable = new Runnable() {
         @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
         @Override
         public void run() {
             // Insert custom code here
 
-            if(i<size){
+            if (i < size) {
 
                 String name = mUSBMonitor.getDeviceList().get(i).getConfiguration(0).getInterface(0).getName();
                 if (name == null || !name.equalsIgnoreCase("bluetooth radio")) {
@@ -344,14 +381,14 @@ public class MyService extends Service {
                     cameraClientList.add(cameraClient);
                 }
 
-                if(DEBUG) Log.d(TAG, "run->>> :"+i+" size:"+list.get(i).getDeviceName());
+                if (DEBUG) Log.d(TAG, "run->>> :" + i + " size:" + list.get(i).getDeviceName());
 
                 // Repeat every 2 seconds
                 handler.postDelayed(runnable, 11000);
 
-                i = i+1;
+                i = i + 1;
 
-            }else{
+            } else {
                 handler.removeCallbacks(runnable);
             }
 
@@ -374,6 +411,7 @@ public class MyService extends Service {
     /**
      * helper method to show/change message on notification area
      * and set this service as foreground service to keep alive as possible as this can.
+     *
      * @param text
      */
     private void showNotification(final CharSequence text) {
@@ -398,7 +436,7 @@ public class MyService extends Service {
         // Set the info for the views that show in the notification panel.
         final Notification notification;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            notification = new Notification.Builder(this,channel)
+            notification = new Notification.Builder(this, channel)
                     .setSmallIcon(R.drawable.ic_launcher)  // the status icon
                     .setTicker(text)  // the status text
                     .setWhen(System.currentTimeMillis())  // the time stamp
@@ -407,7 +445,7 @@ public class MyService extends Service {
                     .setContentText(text)  // the contents of the entry
                     .setContentIntent(PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), 0))  // The intent to send when the entry is clicked
                     .build();
-        }else{
+        } else {
             notification = new Notification.Builder(this)
                     .setSmallIcon(R.drawable.ic_launcher)  // the status icon
                     .setTicker(text)  // the status text

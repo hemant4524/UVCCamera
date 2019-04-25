@@ -40,7 +40,7 @@
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
         <activity
-            android:name="com.serenegiant.usbcameratest7.MainBackupActivity"
+            android:name="com.serenegiant.usbcameratest7.MultiCameraActivity"
             android:label="@string/app_name"
             android:screenOrientation="sensorLandscape" >
             <intent-filter>

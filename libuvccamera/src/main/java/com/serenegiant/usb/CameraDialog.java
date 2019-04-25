@@ -33,7 +33,9 @@ import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.hardware.usb.UsbDevice;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.RequiresApi;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -144,6 +146,7 @@ public class CameraDialog extends DialogFragment {
 	}
 
 
+	@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 	@Override
 	public void onResume() {
 		super.onResume();
@@ -155,6 +158,7 @@ public class CameraDialog extends DialogFragment {
 	}
 
 	private final OnClickListener mOnClickListener = new OnClickListener() {
+		@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 		@Override
 		public void onClick(final View v) {
 			switch (v.getId()) {
@@ -189,9 +193,11 @@ public class CameraDialog extends DialogFragment {
 		super.onCancel(dialog);
 	}
 
+	@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 	public void updateDevices() {
 //		mUSBMonitor.dumpDevices();
 		final List<DeviceFilter> filter = DeviceFilter.getDeviceFilters(getActivity(), R.xml.device_filter);
+
 		mDeviceListAdapter = new DeviceListAdapter(getActivity(), mUSBMonitor.getDeviceList(filter.get(0)));
 		mSpinner.setAdapter(mDeviceListAdapter);
 	}
@@ -199,11 +205,25 @@ public class CameraDialog extends DialogFragment {
 	private static final class DeviceListAdapter extends BaseAdapter {
 
 		private final LayoutInflater mInflater;
-		private final List<UsbDevice> mList;
+		private final List<UsbDevice> mList = new ArrayList<UsbDevice>();
 
+		@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 		public DeviceListAdapter(final Context context, final List<UsbDevice>list) {
 			mInflater = LayoutInflater.from(context);
-			mList = list != null ? list : new ArrayList<UsbDevice>();
+
+			if(list != null){
+				for (int i = 0; i < list.size(); i++) {
+
+					String name = list.get(i).getConfiguration(0).getInterface(0).getName();
+					if (name == null || !name.equalsIgnoreCase("bluetooth radio")) {
+						mList.add(list.get(i));
+					}
+				}
+			}
+
+
+
+
 		}
 
 		@Override

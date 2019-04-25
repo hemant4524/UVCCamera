@@ -270,7 +270,7 @@ public class UVCService extends BaseService {
 									//Do something after 10000ms
 									finalService.captureStill(MediaMuxerWrapper.getCaptureFile(Environment.DIRECTORY_DCIM, ".jpg").toString());
 								}
-							}, 10000);
+							}, 5000);
 						} else {
 							Log.w(TAG, "service already exist before connection");
 						}

@@ -31,7 +31,7 @@
     android:paddingLeft="@dimen/horizontal_margin"
     android:paddingRight="@dimen/horizontal_margin"
     android:paddingTop="@dimen/vertical_margin"
-    tools:context="com.serenegiant.serviceviewtest.MainActivity" >
+    tools:context="com.serenegiant.usbcameratest4.MainActivity" >
 
 
 	<com.serenegiant.widget.UVCCameraTextureView
@@ -55,7 +55,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignBottom="@id/camera_view"
-        android:gravity="bottom|center_horizontal" >
+        android:gravity="bottom|center_horizontal"
+        android:layout_marginBottom="100dp">
 
         <Button
             android:id="@+id/start_button"
@@ -76,7 +77,8 @@
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/camera_view"
         android:layout_gravity="center_horizontal"
-        android:text="ToggleButton" />
+        android:text="ToggleButton"
+        android:visibility="invisible"/>
 
     <SurfaceView
         android:id="@+id/camera_view_sub"

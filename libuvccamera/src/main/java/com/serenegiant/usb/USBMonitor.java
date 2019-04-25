@@ -424,10 +424,10 @@ public final class USBMonitor {
 					processConnect(device);
 				} else {
 					try {
-						// パーミッションがなければ要求する
+						// Request without permission
 						mUsbManager.requestPermission(device, mPermissionIntent);
 					} catch (final Exception e) {
-						// Android5.1.xのGALAXY系でandroid.permission.sec.MDM_APP_MGMTという意味不明の例外生成するみたい
+						// It seems to generate an unknown exception such as android.permission.sec.MDM_APP_MGMT in the Android 5.1.x GALAXY system
 						Log.w(TAG, e);
 						processCancel(device);
 						result = true;

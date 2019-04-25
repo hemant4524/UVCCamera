@@ -23,4 +23,23 @@
   -->
 <resources>
     <string name="app_name">USBCamera(dual camera)</string>
+    <string name="global_tag" translatable="false">XLog</string>
+    <string name="pref_title_log_level">Log level</string>
+    <string-array name="pref_log_level_titles">
+        <item>Trace</item>
+        <item>Debug</item>
+        <item>Info</item>
+        <item>Warning</item>
+        <item>Error</item>
+        <item>OFF</item>
+    </string-array>
+    <string-array name="pref_log_level_values">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+    </string-array>
+    <string name="pref_default_log_level">2</string>
 </resources>

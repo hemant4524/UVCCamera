@@ -47,6 +47,8 @@ import com.serenegiant.usbcameratest7.constants.FileConstant;
 import com.serenegiant.usbcameratest7.motiondetection.MotionDetector;
 import com.serenegiant.usbcameratest7.motiondetection.MotionDetectorCallback;
 import com.serenegiant.usbcameratest7.server.RestClient;
+import com.serenegiant.usbcameratest7.xlog.XLog;
+import com.serenegiant.utils.SysLogger;
 import com.serenegiant.widget.CameraViewInterface;
 import com.serenegiant.widget.UVCCameraTextureView;
 
@@ -116,10 +118,9 @@ public final class MultiCameraActivity extends BaseActivity implements CameraDia
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-
         mSendPhoto = (ImageButton) findViewById(R.id.sendPhoto);
         mSendPhoto.setOnClickListener(mOnClickListener);
+        SysLogger.info("onCreate IN");
 
 //
 //        findViewById(R.id.RelativeLayout1).setOnClickListener(mOnClickListener);
@@ -148,7 +149,7 @@ public final class MultiCameraActivity extends BaseActivity implements CameraDia
         mCaptureButtonUL.setOnClickListener(mOnClickListener);
         mCaptureButtonUL.setVisibility(View.INVISIBLE);
         mHandlerUL = UVCCameraHandler.createHandler(this, mUVCCameraViewUL,
-                USE_SURFACE_ENCODER ? 0 : 1, 640, 480, FRAME_FORMAT_MJPEG);
+                USE_SURFACE_ENCODER ? 0 : 1, 320, 240, FRAME_FORMAT_MJPEG);
         //mHandlerUL = UVCCameraHandler.createHandler(this, mUVCCameraViewUL, UVCCamera.DEFAULT_PREVIEW_WIDTH, UVCCamera.DEFAULT_PREVIEW_HEIGHT, BANDWIDTH_FACTORS[0]);
 
         // Camera 2
@@ -160,7 +161,7 @@ public final class MultiCameraActivity extends BaseActivity implements CameraDia
         mCaptureButtonUR.setVisibility(View.INVISIBLE);
        // mHandlerUR = UVCCameraHandler.createHandler(this, mUVCCameraViewUR, UVCCamera.DEFAULT_PREVIEW_WIDTH, UVCCamera.DEFAULT_PREVIEW_HEIGHT, BANDWIDTH_FACTORS[1]);
         mHandlerUR = UVCCameraHandler.createHandler(this, mUVCCameraViewUR,
-                USE_SURFACE_ENCODER ? 0 : 1, UVCCamera.DEFAULT_PREVIEW_WIDTH, UVCCamera.DEFAULT_PREVIEW_HEIGHT, FRAME_FORMAT_MJPEG);
+                USE_SURFACE_ENCODER ? 0 : 1, UVCCamera.DEFAULT_PREVIEW_WIDTH, UVCCamera.DEFAULT_PREVIEW_HEIGHT, 0);
 
 
         // Camera 3
@@ -432,7 +433,7 @@ public final class MultiCameraActivity extends BaseActivity implements CameraDia
                             @Override
                             public void run() {
 
-                                sendPhotos();
+                              //  sendPhotos();
                             }
                         },5000);
                     }

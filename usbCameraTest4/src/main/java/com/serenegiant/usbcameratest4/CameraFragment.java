@@ -80,6 +80,8 @@ public class CameraFragment extends BaseFragment {
 
     private int cameraId = 0;
 
+
+
     public CameraFragment() {
         if (DEBUG) Log.v(TAG, "Constructor:");
 //		setRetainInstance(true);
@@ -144,9 +146,9 @@ public class CameraFragment extends BaseFragment {
 
        // tryOpenUVCCamera(true);
 
-         Intent intent = new Intent(getActivity(), MyService.class);
-        intent.setAction(Constants.ACTION.STARTFOREGROUND_ACTION);
-         getActivity().startService(intent);
+//         Intent intent = new Intent(getActivity(), MyService.class);
+//         intent.setAction(Constants.ACTION.STARTFOREGROUND_ACTION);
+//         getActivity().startService(intent);
     }
 
     @Override
@@ -231,6 +233,7 @@ public class CameraFragment extends BaseFragment {
         }
     };
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private boolean updateCameraDialog() {
         final Fragment fragment = getFragmentManager().findFragmentByTag("CameraDialog");
         if (fragment instanceof CameraDialog) {
@@ -295,15 +298,20 @@ public class CameraFragment extends BaseFragment {
                 case R.id.start_button:
                     if (DEBUG) Log.v(TAG, "onClick:start");
                     // start service
-                    final List<UsbDevice> list = mUSBMonitor.getDeviceList();
-                    if (list.size() > 0) {
-                        if (mCameraClient == null)
-                            mCameraClient = new CameraClient(getActivity(), mCameraListener);
-                        mCameraClient.select(list.get(cameraId));
-                        mCameraClient.resize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
-                        mCameraClient.connect();
-                        setPreviewButton(false);
-                    }
+//                    final List<UsbDevice> list = mUSBMonitor.getDeviceList();
+//                    if (list.size() > 0) {
+//                        if (mCameraClient == null)
+//                            mCameraClient = new CameraClient(getActivity(), mCameraListener);
+//                        mCameraClient.select(list.get(cameraId));
+//                        mCameraClient.resize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+//                        mCameraClient.connect();
+//                        setPreviewButton(false);
+//                    }
+
+                    Intent intent = new Intent(getActivity(), MyService.class);
+                    intent.setAction(Constants.ACTION.STARTFOREGROUND_ACTION);
+                    getActivity().startService(intent);
+
                     break;
                 case R.id.stop_button:
                     if (DEBUG) Log.v(TAG, "onClick:stop");
