@@ -63,6 +63,7 @@ public class MyService extends Service {
     int i = 0;
     private static final String DIR_NAME = "UNOAiCamera";
     private NotificationManager mNotificationManager;
+    private ArrayList<Integer> cameraIds;
 
 
     public MyService() {
@@ -134,7 +135,7 @@ public class MyService extends Service {
             if (DEBUG) Log.d(TAG, "startHandler: " + list.size());
 
 
-            List<Integer> cameraIds = new ArrayList<>();
+            cameraIds = new ArrayList<>();
             for (int i = 0; i < mUSBMonitor.getDeviceList().size(); i++) {
 
                 String name = mUSBMonitor.getDeviceList().get(i).getConfiguration(0).getInterface(0).getName();
@@ -145,58 +146,61 @@ public class MyService extends Service {
 
 
             size = list.size();
-//            handler = new Handler();
+            handler = new Handler(getMainLooper());
 //            handler.post(runnable);
 
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
+            Thread thread = new Thread(new CameraThread());
+            thread.start();
 
-                    cameraClient = new CameraClient(getApplicationContext(), mCameraListener);
-                    cameraClient.select(list.get(cameraIds.get(0)));
-                    cameraClient.resize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
-                    cameraClient.connect();
-
-                }
-            }, 1000);
-
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-
-                    cameraClient.disconnect();
-                    cameraClient.release();
-                    final Intent stopIntent = new Intent(getApplicationContext(), UVCService.class);
-                    stopIntent.setAction(Constants.ACTION.STOPFOREGROUND_ACTION);
-                    getApplicationContext().startService(stopIntent);
-                }
-            }, 10000);
-
-
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-
-                    cameraClient = new CameraClient(getApplicationContext(), mCameraListener);
-                    cameraClient.select(list.get(cameraIds.get(1)));
-                    cameraClient.resize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
-                    cameraClient.connect();
-
-                }
-            }, 11000);
-
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-
-                    cameraClient.disconnect();
-                    cameraClient.release();
-                    final Intent stopIntent = new Intent(getApplicationContext(), UVCService.class);
-                    stopIntent.setAction(Constants.ACTION.STOPFOREGROUND_ACTION);
-                    getApplicationContext().startService(stopIntent);
-                    stopSelf();
-                }
-            }, 21000);
+//            new Handler().postDelayed(new Runnable() {
+//                @Override
+//                public void run() {
+//
+//                    cameraClient = new CameraClient(getApplicationContext(), mCameraListener);
+//                    cameraClient.select(list.get(cameraIds.get(0)));
+//                    cameraClient.resize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+//                    cameraClient.connect();
+//
+//                }
+//            }, 1000);
+//
+//            new Handler().postDelayed(new Runnable() {
+//                @Override
+//                public void run() {
+//
+//                    cameraClient.disconnect();
+//                    cameraClient.release();
+//                    final Intent stopIntent = new Intent(getApplicationContext(), UVCService.class);
+//                    stopIntent.setAction(Constants.ACTION.STOPFOREGROUND_ACTION);
+//                    getApplicationContext().startService(stopIntent);
+//                }
+//            }, 10000);
+//
+//
+//            new Handler().postDelayed(new Runnable() {
+//                @Override
+//                public void run() {
+//
+//                    cameraClient = new CameraClient(getApplicationContext(), mCameraListener);
+//                    cameraClient.select(list.get(cameraIds.get(1)));
+//                    cameraClient.resize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+//                    cameraClient.connect();
+//
+//                }
+//            }, 11000);
+//
+//            new Handler().postDelayed(new Runnable() {
+//                @Override
+//                public void run() {
+//
+//                    cameraClient.disconnect();
+//                    cameraClient.release();
+//                    final Intent stopIntent = new Intent(getApplicationContext(), UVCService.class);
+//                    stopIntent.setAction(Constants.ACTION.STOPFOREGROUND_ACTION);
+//                    getApplicationContext().startService(stopIntent);
+//                    stopSelf();
+//                }
+//            }, 21000);
 
 
 //            if (cameraIds.size() > 1) {
@@ -294,11 +298,11 @@ public class MyService extends Service {
     public void onDestroy() {
         super.onDestroy();
 
-        if (cameraClient != null) {
-            cameraClient.release();
-            cameraClient.disconnect();
-
-        }
+//        if (cameraClient != null) {
+//            cameraClient.release();
+//            cameraClient.disconnect();
+//
+//        }
         if (DEBUG) Log.v(TAG, "onDestroy:");
 
         final Intent stopIntent = new Intent(getApplicationContext(), UVCService.class);
@@ -363,38 +367,147 @@ public class MyService extends Service {
     };
 
 
-    private Runnable runnable = new Runnable() {
+    private class CameraThread  implements Runnable {
+
+        private boolean IS_RUNNING = true;
+
+        public CameraThread() {
+
+        }
+
         @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
         @Override
         public void run() {
             // Insert custom code here
 
-            if (i < size) {
+            while (IS_RUNNING){
+                if (i < cameraIds.size()) {
 
-                String name = mUSBMonitor.getDeviceList().get(i).getConfiguration(0).getInterface(0).getName();
-                if (name == null || !name.equalsIgnoreCase("bluetooth radio")) {
-                    cameraClient = new CameraClient(getApplicationContext(), mCameraListener);
-                    cameraClient.select(list.get(i));
-                    cameraClient.resize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
-                    cameraClient.connect();
+                            if (cameraClient != null) {
+                                cameraClient.disconnect();
+                                cameraClient.release();
+                                try {
+                                    Thread.sleep(5000);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                            }
 
-                    cameraClientList.add(cameraClient);
+                            cameraClient = new CameraClient(getApplicationContext(), mCameraListener);
+                            cameraClient.select(list.get(cameraIds.get(i)));
+                            cameraClient.resize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+                            cameraClient.connect();
+
+
+
+                    if (DEBUG)
+                        Log.d(TAG, "run->>> :" + i + " size:" + list.get(cameraIds.get(i)).getDeviceName());
+
+                    // Repeat every 2 seconds
+                    //  handler.postDelayed(runnable, 8000);
+
+                    try {
+                        Thread.sleep(10000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    i = i + 1;
+
+                } else {
+                    if (DEBUG)
+                        try {
+                            Thread.sleep(5000);
+                            if (cameraClient != null) {
+                                cameraClient.disconnect();
+                                cameraClient.release();
+                                Log.d(TAG,"stop camera thread");
+                                IS_RUNNING = false;
+
+                              //  sendPhotoServer();
+
+
+                            }
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+
                 }
-
-                if (DEBUG) Log.d(TAG, "run->>> :" + i + " size:" + list.get(i).getDeviceName());
-
-                // Repeat every 2 seconds
-                handler.postDelayed(runnable, 11000);
-
-                i = i + 1;
-
-            } else {
-                handler.removeCallbacks(runnable);
             }
 
 
+
+
         }
-    };
+    }
+
+
+    private void sendPhotoServer(){
+
+
+                    File root = Environment.getExternalStorageDirectory();
+
+                    final File dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM), DIR_NAME);
+
+//                    String dirPath = root.getPath() + File.separator + FileConstant.APP_ROOT_FOLDER_NAME;
+                    String dirPath = dir.getAbsolutePath();
+
+                    File folder = new File(dirPath);
+
+                    // Send file to server
+                    MultipartBody.Builder builder = new MultipartBody.Builder();
+                    builder.setType(MultipartBody.FORM);
+
+                    MultipartBody.Part[] parts = new MultipartBody.Part[folder.listFiles().length];
+
+                    int i = 0;
+
+                    if (folder.exists()) {
+
+                        for (File file : folder.listFiles()) {
+                            Log.d("File", "Upload file: " + file.getAbsolutePath());
+                            RequestBody surveyBody = RequestBody.create(MediaType.parse("image/*"), file);
+                            parts[i] = MultipartBody.Part.createFormData("files[]", file.getName(), surveyBody);
+                            i++;
+                        }
+                    }
+
+
+                    Call<JsonObject> call = RestClient.getInstance().getApiService().uploadMultiFile1(parts);
+                    call.enqueue(new Callback<JsonObject>() {
+                        @Override
+                        public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+
+                            Log.d("Success response:", ": " + response);
+                            stopSelf();
+                            handler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(getApplicationContext(), "Image upload successfully! ", Toast.LENGTH_LONG).show();
+                                }
+                            });
+
+
+
+                        }
+
+                        @Override
+                        public void onFailure(Call<JsonObject> call, Throwable t) {
+
+                            Log.d("Error in  webservice:", " " + t.getMessage());
+                            stopSelf();
+
+                            handler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(getApplicationContext(), "Error in  webservice:" + t.getMessage(), Toast.LENGTH_SHORT).show();
+                                }
+                            });
+
+                        }
+                    });
+
+    }
 
 
     private boolean isMyServiceRunning(Class<?> serviceClass) {

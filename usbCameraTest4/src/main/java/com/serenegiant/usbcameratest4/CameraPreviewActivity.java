@@ -28,8 +28,11 @@ import android.animation.Animator;
 import android.content.Intent;
 import android.graphics.SurfaceTexture;
 import android.hardware.usb.UsbDevice;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
+import android.text.Html;
 import android.util.Log;
 import android.view.Surface;
 import android.view.View;
@@ -39,6 +42,7 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
@@ -47,6 +51,7 @@ import com.serenegiant.constants.Constants;
 import com.serenegiant.dialog.MessageDialogFragment;
 import com.serenegiant.service.MyService;
 import com.serenegiant.usb.CameraDialog;
+import com.serenegiant.usb.DeviceFilter;
 import com.serenegiant.usb.USBMonitor;
 import com.serenegiant.usb.USBMonitor.OnDeviceConnectListener;
 import com.serenegiant.usb.USBMonitor.UsbControlBlock;
@@ -55,6 +60,9 @@ import com.serenegiant.usbcameracommon.UVCCameraHandler;
 import com.serenegiant.utils.PermissionCheck;
 import com.serenegiant.utils.ViewAnimationHelper;
 import com.serenegiant.widget.CameraViewInterface;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public final class CameraPreviewActivity extends BaseActivity implements CameraDialog.CameraDialogParent {
     private static final boolean DEBUG = true;    // TODO set false on release
@@ -118,11 +126,13 @@ public final class CameraPreviewActivity extends BaseActivity implements CameraD
     private View mToolsLayout, mValueLayout;
     private SeekBar mSettingSeekbar;
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (DEBUG) Log.v(TAG, "onCreate:");
         setContentView(R.layout.camera_preview);
+
         mTakePhotoButton = findViewById(R.id.take_photo_button);
         mTakePhotoButton.setOnClickListener(mOnClickListener);
         mCameraButton = findViewById(R.id.camera_button);
@@ -155,6 +165,13 @@ public final class CameraPreviewActivity extends BaseActivity implements CameraD
                 USE_SURFACE_ENCODER ? 0 : 1, PREVIEW_WIDTH, PREVIEW_HEIGHT, PREVIEW_MODE);
 
 
+        final List<DeviceFilter> filters = DeviceFilter.getDeviceFilters(this, R.xml.device_filter);
+        mUSBMonitor.setDeviceFilter(filters);
+        List<UsbDevice> list = mUSBMonitor.getDeviceList();
+
+        if (DEBUG) Log.d(TAG, "startHandler: " + list.size());
+
+
     }
 
     @Override
@@ -162,16 +179,23 @@ public final class CameraPreviewActivity extends BaseActivity implements CameraD
         super.onStart();
         if (DEBUG) Log.v(TAG, "onStart:");
         mUSBMonitor.register();
-        if (mUVCCameraView != null)
+        if (mUVCCameraView != null){
             mUVCCameraView.onResume();
+        }
+
     }
 
     @Override
     protected void onStop() {
         if (DEBUG) Log.v(TAG, "onStop:");
-        mCameraHandler.close();
-        if (mUVCCameraView != null)
+
+        if(mCameraHandler != null){
+            mCameraHandler.close();
+        }
+        if (mUVCCameraView != null){
             mUVCCameraView.onPause();
+        }
+
         setCameraButton(false);
         super.onStop();
     }
@@ -224,6 +248,17 @@ public final class CameraPreviewActivity extends BaseActivity implements CameraD
                     break;
                 case R.id.take_photo_button:
                     if (checkPermissionWriteExternalStorage()){
+
+                        setCameraButton(false);
+                        if (mCameraHandler != null) {
+                            mCameraHandler.release();
+                            mCameraHandler = null;
+                        }
+                        if (mUSBMonitor != null) {
+                            mUSBMonitor.destroy();
+                            mUSBMonitor = null;
+                        }
+
 
                         Toast.makeText(getApplicationContext(), "Start capture photo service! ", Toast.LENGTH_LONG).show();
                         Intent intent = new Intent(CameraPreviewActivity.this, MyService.class);
@@ -300,16 +335,39 @@ public final class CameraPreviewActivity extends BaseActivity implements CameraD
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mCaptureButton.setVisibility(View.VISIBLE);
+//                mCaptureButton.setVisibility(View.VISIBLE);
             }
         });
         updateItems();
     }
 
     private final OnDeviceConnectListener mOnDeviceConnectListener = new OnDeviceConnectListener() {
+        @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
         @Override
         public void onAttach(final UsbDevice device) {
-            // Toast.makeText(MainActivity.this, "USB_DEVICE_ATTACHED", Toast.LENGTH_SHORT).show();
+            // Toast.makeText(CameraPreviewActivity.this, "USB_DEVICE_ATTACHED", Toast.LENGTH_SHORT).show();
+
+            int totalCamera = 0;
+            for (int i = 0; i < mUSBMonitor.getDeviceList().size(); i++) {
+
+                String name = mUSBMonitor.getDeviceList().get(i).getConfiguration(0).getInterface(0).getName();
+                if (name == null || !name.equalsIgnoreCase("bluetooth radio")) {
+                    totalCamera ++;
+                }
+            }
+
+            Log.d(TAG, "onCreate: size:"+  totalCamera);
+            int finalTotalCamera = totalCamera;
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    String label1 = "<font color='#ffffff'>Number of </font>";
+                    String label2 = " <font color='red'>"+finalTotalCamera+"</font>";
+                    String label3 = " <font color='#ffffff'>USB Camera Connected.</font>";
+                    ((TextView)findViewById(R.id.txtNumberOfCameraLabel)).setText(Html.fromHtml(label1+label2+label3));
+                }
+            });
+
         }
 
         @Override
@@ -341,7 +399,7 @@ public final class CameraPreviewActivity extends BaseActivity implements CameraD
 
         @Override
         public void onDettach(final UsbDevice device) {
-            Toast.makeText(CameraPreviewActivity.this, "USB_DEVICE_DETACHED", Toast.LENGTH_SHORT).show();
+           // Toast.makeText(CameraPreviewActivity.this, "USB_DEVICE_DETACHED", Toast.LENGTH_SHORT).show();
         }
 
         @Override
@@ -398,7 +456,7 @@ public final class CameraPreviewActivity extends BaseActivity implements CameraD
         public void run() {
             if (isFinishing()) return;
             final int visible_active = isActive() ? View.VISIBLE : View.INVISIBLE;
-            mToolsLayout.setVisibility(visible_active);
+//            mToolsLayout.setVisibility(visible_active);
             mBrightnessButton.setVisibility(
                     checkSupportFlag(UVCCamera.PU_BRIGHTNESS)
                             ? visible_active : View.INVISIBLE);
